@@ -7,6 +7,8 @@ import 'package:shop_app/layout/shop_layout/home_cubit/cubit.dart';
 import 'package:shop_app/layout/shop_layout/home_cubit/states.dart';
 import 'package:shop_app/models/categories_model/categories_model.dart';
 import 'package:shop_app/models/home_model/home_model.dart';
+import 'package:shop_app/shared/colors.dart';
+import 'package:shop_app/shared/components.dart';
 
 class ProductsScreen extends StatelessWidget {
   const ProductsScreen({Key key}) : super(key: key);
@@ -14,12 +16,24 @@ class ProductsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<HomePageCubit, HomePageStates>(
-      listener: (cntext, state) {},
+      listener: (context, state) {
+        if (state is ChangeFavoritesSuccessState)
+        {
+          if(!state.model.status)
+            {
+              showToast(msg: state.model.message ,
+                  state: toastState.ERROR,);
+            }else {
+            showToast(msg: state.model.message ,
+              state: toastState.SUCCESS,);
+          }
+        }
+      },
       builder: (context, state) {
         var cubit = HomePageCubit.get(context);
         return ConditionalBuilder(
           condition: cubit.homeModel != null && cubit.categoriesModel!= null,
-          builder: (context) => productsBuilder(cubit.homeModel , cubit.categoriesModel) ,
+          builder: (context) => productsBuilder(cubit.homeModel , cubit.categoriesModel, context) ,
           fallback: (context) => Center(
             child: CircularProgressIndicator(),
           ),
@@ -29,7 +43,7 @@ class ProductsScreen extends StatelessWidget {
   }
 }
 
-Widget productsBuilder(HomeModel model , CategoriesModel catModel) => SingleChildScrollView(
+Widget productsBuilder(HomeModel model , CategoriesModel catModel , context) => SingleChildScrollView(
   physics: BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,7 +102,7 @@ Widget productsBuilder(HomeModel model , CategoriesModel catModel) => SingleChil
               childAspectRatio: 1 / 1.57,
               children: List.generate(
                 model.data.products.length,
-                (index) => buildGridView(model.data.products[index]),
+                (index) => buildGridView(model.data.products[index] , context),
               ),
             ),
           ),
@@ -121,7 +135,7 @@ Widget buildCategoryItems(DataModel catModel)=>Stack(
   ],
 );
 
-Widget buildGridView(ProductModel model) =>
+Widget buildGridView(ProductModel model , context) =>
     Container(
       color: Colors.white,
       child: Column(
@@ -189,11 +203,19 @@ Widget buildGridView(ProductModel model) =>
                     ),
                     Spacer(),
                     IconButton(
-                        icon: Icon(Icons.favorite_outline,
-                        size: 20.0,
+                        icon: CircleAvatar(
+                          radius: 15.0,
+                          backgroundColor: HomePageCubit.get(context).favorites[model.id] ? defaultColor : Colors.grey ,
+                          child: Icon(
+                          Icons.favorite_outline,
+                          size: 14.0,
+                            color: Colors.white,
+                          ),
                         ),
-                        onPressed: (){},
-
+                        onPressed: ()
+                        {
+                          HomePageCubit.get(context).changeFavorite(model.id);
+                        },
                     ),
                   ],
                 ),
