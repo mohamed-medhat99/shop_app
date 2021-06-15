@@ -6,6 +6,7 @@ import 'package:shop_app/favourites/favourites_screen.dart';
 import 'package:shop_app/layout/shop_layout/home_cubit/states.dart';
 import 'package:shop_app/models/categories_model/categories_model.dart';
 import 'package:shop_app/models/change_favorites/change_favorites.dart';
+import 'package:shop_app/models/get_favorites/get_favorites.dart';
 import 'package:shop_app/models/home_model/home_model.dart';
 import 'package:shop_app/products/products.dart';
 import 'package:shop_app/settings/settings.dart';
@@ -87,11 +88,31 @@ class HomePageCubit extends Cubit<HomePageStates> {
       print('favorits message = ${changeFavorites.message}'),
       if(!changeFavorites.status){
         favorites[id] = ! favorites[id],
-      },
+      }else
+        {
+          getFavorites(),
+        },
       emit(ChangeFavoritesSuccessState(changeFavorites)),
     }).catchError((error){
       favorites[id] = ! favorites[id];
       emit(ChangeFavoritesErrorState(error));
+    });
+  }
+ FavoritesModel favoritesModel ;
+  void getFavorites(){
+    emit(GetLoadingFavState());
+    DioHelper.getData(
+        url: FAVORITES,
+        token: token,
+        lang: 'en',
+    ).then((value) =>
+    {
+      favoritesModel = FavoritesModel.fromJson(value.data),
+      print(value.data),
+      emit(GetFavoritesSuccessState()),
+    }).catchError((error){
+      emit(GetFavoritesErrorState(error));
+      print(error);
     });
   }
 }

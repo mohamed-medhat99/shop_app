@@ -36,3 +36,14 @@ class ChangeFavoritesErrorState extends HomePageStates {
   ChangeFavoritesErrorState(this.error);
 
 }
+
+class GetFavoritesSuccessState extends HomePageStates{}
+
+class GetLoadingFavState extends HomePageStates{}
+
+class GetFavoritesErrorState extends HomePageStates{
+  final String error;
+
+  GetFavoritesErrorState(this.error);
+
+}
